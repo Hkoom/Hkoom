@@ -1,0 +1,9 @@
+Package: com.hkoom.tweak
+Name: hkoom
+Version: 1.0
+Architecture: iphoneos-arm
+Description: hkoom - Personal Instagram Tweak
+Maintainer: hkoom
+Author: hkoom
+Section: Tweaks
+Depends: mobilesubstrate, firmware (>= 14.0)
