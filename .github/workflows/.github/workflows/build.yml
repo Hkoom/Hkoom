@@ -1,0 +1,54 @@
+name: Build hkoom Tweak
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y curl git make fakeroot dpkg
+
+      - name: Setup Theos
+        run: |
+          export THEOS=/opt/theos
+          sudo git clone --recursive https://github.com/theos/theos.git $THEOS
+          sudo chown -R $USER:$USER $THEOS
+
+      - name: Download iOS SDK
+        run: |
+          export THEOS=/opt/theos
+          curl -LO https://github.com/theos/sdks/releases/download/2024-09-24/iPhoneOS16.5.sdk.tar.xz
+          mkdir -p $THEOS/sdks
+          tar -xf iPhoneOS16.5.sdk.tar.xz -C $THEOS/sdks
+
+      - name: Build Tweak
+        run: |
+          export THEOS=/opt/theos
+          export THEOS_MAKE_PATH=$THEOS/makefiles
+          make package FINALPACKAGE=1 SCHEME=release
+
+      - name: Find Output
+        run: |
+          find . -name "*.dylib" -o -name "*.deb" | head -20
+
+      - name: Upload DEB Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: hkoom-package
+          path: packages/*.deb
+
+      - name: Upload dylib only
+        uses: actions/upload-artifact@v4
+        with:
+          name: hkoom-dylib
+          path: .theos/obj/debug/*.dylib
