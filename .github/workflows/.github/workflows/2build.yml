@@ -1,0 +1,34 @@
+name: Build hkoom Tweak
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/theos/theos:latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Tweak
+        run: |
+          export THEOS=/opt/theos
+          export THEOS_MAKE_PATH=$THEOS/makefiles
+          make package FINALPACKAGE=1
+
+      - name: Upload DEB Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: hkoom-package
+          path: packages/*.deb
+
+      - name: Upload dylib
+        uses: actions/upload-artifact@v4
+        with:
+          name: hkoom-dylib
+          path: .theos/obj/debug/*.dylib
